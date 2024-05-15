@@ -38,6 +38,30 @@ const UsersController = {
       return res.status(500).json({ error: 'Internal Server Error' });
     }
   },
+
+  async getMe(req, res) {
+    const { token } = req.headers;
+
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const key = `auth_${token}`;
+    const userId = await dbClient.get(key);
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Assuming getUserById retrieves user by ID
+    const user = await dbClient.getUserById(userId);
+
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    return res.json({ id: user.id, email: user.email });
+  }
 };
 
 export default UsersController;
