@@ -13,21 +13,29 @@ const UsersController = {
       return res.status(400).json({ error: 'Missing password' });
     }
 
-    // Check if the email already exists
+    // Check if email already exists in DB
     const userExists = await dbClient.collection('users').findOne({ email });
     if (userExists) {
       return res.status(400).json({ error: 'Already exist' });
     }
 
-    // Hash the password
+    // Hash the password using SHA1
     const hashedPassword = sha1(password);
 
-    // Insert the new user into the database
-    const result = await dbClient.collection('users').insertOne({ email, password: hashedPassword });
+    // Create new user
+    const newUser = {
+      email,
+      password: hashedPassword,
+    };
 
-    // Return the new user
-    const newUser = { id: result.insertedId, email };
-    return res.status(201).json(newUser);
+    try {
+      const result = await dbClient.collection('users').insertOne(newUser);
+      const { _id } = result.ops[0];
+      return res.status(201).json({ id: _id, email });
+    } catch (error) {
+      console.error('Error creating user:', error);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
   },
 };
 
