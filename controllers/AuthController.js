@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import base64 from 'base-64';
+// import base64 from 'base-64';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
