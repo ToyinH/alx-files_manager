@@ -8,6 +8,7 @@ class DBClient {
     const url = `mongodb://${host}:${port}/${database}`;
 
     this.client = new MongoClient(url, { useUnifiedTopology: true });
+
     this.client.connect((err) => {
       if (err) {
         console.error('DB connection error:', err);
@@ -17,23 +18,25 @@ class DBClient {
     });
   }
 
-  isAlive() {
-    return this.client.isConnected();
-  }
-
-  async nbUsers() {
+  async isEmailExists(email) {
+    if (!this.client || !this.client.isConnected()) {
+      throw new Error('DB connection is not established');
+    }
     const db = this.client.db();
     const collection = db.collection('users');
-    return collection.countDocuments();
+    const user = await collection.findOne({ email });
+    return user !== null;
   }
 
-  async nbFiles() {
+  async insertUser(user) {
+    if (!this.client || !this.client.isConnected()) {
+      throw new Error('DB connection is not established');
+    }
     const db = this.client.db();
-    const collection = db.collection('files');
-    return collection.countDocuments();
+    const collection = db.collection('users');
+    return collection.insertOne(user);
   }
 }
 
-// Create and export an instance of DBClient
 const dbClient = new DBClient();
 export default dbClient;
